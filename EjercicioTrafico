@@ -1,0 +1,72 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+typedef struct {
+    int intensidadVehicular;
+    int velocidadPromedio;
+    int nivelCongestion;
+    int tiempoEspera;
+} DatosTrafico;
+
+void generarDatos(DatosTrafico *sensor, int hora);
+void alertarCongestion(DatosTrafico *sensor);
+
+int main() {
+    srand(time(NULL));
+
+    int numLecturas = 3;
+    DatosTrafico *datosTrafico;
+
+    datosTrafico = (DatosTrafico *)malloc(numLecturas * sizeof(DatosTrafico));
+    if (datosTrafico == NULL) {
+        printf("Error: No se pudo asignar la memoria.\n");
+        return 1;
+    }
+
+    printf("--- Simulacion de Monitoreo de Trafico ---\n");
+
+    for (int i = 0; i < numLecturas; i++) {
+        int horaSimulada = i * 8;
+        printf("\n--- Lectura a las %d:00 horas ---\n", horaSimulada);
+
+        generarDatos(&datosTrafico[i], horaSimulada);
+
+        alertarCongestion(&datosTrafico[i]);
+    }
+
+    printf("\n--- Resumen de los datos registrados ---\n");
+    for (int i = 0; i < numLecturas; i++) {
+        printf("Lectura %d:\n", i + 1);
+        printf("  - Intensidad: %d vehiculos/min\n", datosTrafico[i].intensidadVehicular);
+        printf("  - Velocidad: %d km/h\n", datosTrafico[i].velocidadPromedio);
+        printf("  - Congestion: %d%%\n", datosTrafico[i].nivelCongestion);
+        printf("  - Tiempo de espera: %d segundos\n", datosTrafico[i].tiempoEspera);
+    }
+
+    free(datosTrafico);
+
+    return 0;
+}
+
+void generarDatos(DatosTrafico *sensor, int hora) {
+    sensor->intensidadVehicular = 50 + rand() % 150;
+    sensor->nivelCongestion = rand() % 100;
+
+    if (hora == 8 || hora == 16) {
+        sensor->velocidadPromedio = 20 + rand() % 20;
+        sensor->tiempoEspera = 150 + rand() % 150;
+    } else {
+        sensor->velocidadPromedio = 50 + rand() % 50;
+        sensor->tiempoEspera = 30 + rand() % 100;
+    }
+}
+
+void alertarCongestion(DatosTrafico *sensor) {
+    if (sensor->nivelCongestion > 70 || sensor->tiempoEspera > 120) {
+        printf("  >>> ALERTA: Nivel de congestion critico <<<\n");
+        printf("      Nivel de congestion: %d%%\n", sensor->nivelCongestion);
+        printf("      Tiempo de espera: %d segundos\n", sensor->tiempoEspera);
+    }
+}
