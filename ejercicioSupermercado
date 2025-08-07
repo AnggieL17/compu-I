@@ -1,0 +1,49 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+int main()
+{
+    int i, j;
+    float totalPrecios = 0;
+    char nombres[5][30];
+    float precios[5];
+    float promedioPrecios;
+
+    for (i = 0; i < 5; i++) {
+        printf("\nIngrese el nombre del producto #%d: ", i + 1);
+        scanf(" %[^\n]s", nombres[i]);
+
+        for (j = 0; nombres[i][j] != '\0'; j++) {
+            nombres[i][j] = toupper((unsigned char) nombres[i][j]);
+        }
+
+        do {
+            printf("\nIngrese el precio del producto: ");
+            scanf(" %f", &precios[i]);
+
+            if (precios[i] < 0) {
+                printf("\nMonto invalido.");
+            }
+        } while (precios[i] < 0);
+
+        totalPrecios += precios[i];
+        printf("\n");
+        system("CLS");
+    }
+
+    promedioPrecios = totalPrecios / 5;
+
+    printf("\n------------ INVENTARIO SUPERMERCADO ------------\n");
+
+    printf("Producto:\t\tPrecio:\t\t\n");
+    for (i = 0; i < 5; i++) {
+        printf("|%-20s|%-20.2f|\n", nombres[i], precios[i]);
+    }
+
+    printf("\nTotal de precios: %.2f", totalPrecios);
+    printf("\nPrecio promedio: %.2f", promedioPrecios);
+
+    return 0;
+}
