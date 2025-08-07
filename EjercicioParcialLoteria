@@ -1,0 +1,143 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+int main()
+{
+    // Declaración de variables
+    char nombre[30];
+    int fila = 0, columna = 0, tamano = 0, totalPrincipal = 0, totalSecundaria = 0, totalPuntas = 0, dimensionSubmatriz = 0, productoSuperior = 1, premiosGanados = 0, premioAcumulado = 0;
+
+    // Solicitar nombre al usuario
+    printf("\nIngrese su nombre: ");
+    scanf(" %[^\n]", nombre);
+
+    // Solicitar tamaño de la matriz y validar que sea un número par
+    do {
+        printf("\nIngrese el tamaño de la matriz (n): ");
+        scanf("%d", &tamano);
+    } while (tamano % 2 != 0);
+
+    system("CLS");
+
+    // Generar matriz y poblarla con números aleatorios entre 0 y 99
+    int matriz[tamano][tamano];
+
+    srand(time(NULL));
+
+    for (fila = 0; fila < tamano; fila++){
+        for (columna = 0; columna < tamano; columna++){
+            matriz[fila][columna] = rand() % 99 + 0;
+        }
+    }
+
+    // Asegurar que los números no se repitan
+    int valor = 0;
+    for (fila = 0; fila < tamano; fila++){
+        for (columna = 0; columna < tamano; columna++){
+            valor = matriz[fila][columna];
+            if (matriz[fila][columna] == valor){
+                do{
+                    matriz[fila][columna] = rand() % 99 + 0;
+                } while (matriz[fila][columna] != valor);
+            }
+        }
+    }
+
+    for (fila = 0; fila < tamano; fila++){
+        for (columna = 0; columna < tamano; columna++){
+            // Sumar valores de la diagonal principal
+            if (fila == columna){
+                totalPrincipal += matriz[fila][columna];
+            }
+
+            // Sumar valores de la diagonal secundaria
+            if ((fila + columna) == tamano - 1){
+                totalSecundaria += matriz[fila][columna];
+            }
+
+            // Sumar valores de las esquinas
+            if ((fila == 0) && (columna == 0)){
+                totalPuntas += matriz[fila][columna];
+            }
+            if ((fila == 0) && (columna == tamano - 1)){
+                totalPuntas += matriz[fila][columna];
+            }
+            if ((fila == tamano - 1) && (columna == 0)){
+                totalPuntas += matriz[fila][columna];
+            }
+            if ((fila == tamano - 1) && (columna == tamano - 1)){
+                totalPuntas += matriz[fila][columna];
+            }
+        }
+    }
+
+    // Producto de elementos del cuadrante superior
+    dimensionSubmatriz = tamano / 2;
+    productoSuperior = 1;
+
+    for (fila = 0; fila < dimensionSubmatriz; fila++){
+        for (columna = 0; columna < dimensionSubmatriz; columna++){
+            productoSuperior *= matriz[fila][columna];
+        }
+    }
+
+    // Salida del programa
+    printf("Bienvenido/a, %s!\n\n", nombre);
+
+    // Mostrar matriz
+    for (int k = 0; k < tamano; k++){
+        for (int l = 0; l < tamano; l++){
+            printf("[%02d]", matriz[k][l]);
+        }
+        printf("\n");
+    }
+    printf("\nResultados:");
+
+    // Evaluar premios
+    // Premio "DIAGONAL DORADA"
+    if (totalPrincipal > 200){
+        printf("\n- Diagonal Dorada ganada! +$10.000");
+        premioAcumulado += 10000;
+        premiosGanados++;
+    }
+
+    // Premio "DIAGONAL PLATEADA"
+    if (totalSecundaria > 200){
+        printf("\n- Diagonal Plateada ganada! +$5.000");
+        premioAcumulado += 5000;
+        premiosGanados++;
+    }
+
+    // Premio "ESQUINAS MAGICAS"
+    if (totalPuntas == 100){
+        printf("\n- Esquinas Magicas ganada! +$7.500");
+        premioAcumulado += 7500;
+        premiosGanados++;
+    }
+
+    // Premio "CUADRO GANADOR"
+    if (productoSuperior > 5000000) {
+        printf("\n- Cuadro Ganador ganado! +$15.000");
+        premioAcumulado += 15000;
+        premiosGanados++;
+    }
+
+    // Mensaje en caso de que el jugador no haya ganado nada
+    if (premiosGanados == 0){
+        printf("\n- No has ganado! :c");
+    }
+
+    printf("\n- Combinaciones acertadas: %d", premiosGanados);
+
+    // En el caso de que el cartón sea extraño
+    if (premiosGanados >= 2){
+        premioAcumulado = premioAcumulado * premiosGanados;
+    }
+
+    // Mostrar el premio total
+    printf("\nPremio total: $%d", premioAcumulado);
+
+    return 0;
+}
