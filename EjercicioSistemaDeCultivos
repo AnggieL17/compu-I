@@ -1,0 +1,119 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define numDias 2
+#define lecturasPorDia 6
+
+typedef struct {
+    int id;
+    float ph;           
+    float nutrientes;     
+    float temperaturaAgua; 
+    float luzSolar;      
+    char timestamp[20];   
+} RegistroCultivo;
+
+void generarDatos(RegistroCultivo *registro, int id, int dia, int hora);
+void procesarDatos(RegistroCultivo *lista, int totalRegistros);
+void filtrarRegistros(RegistroCultivo *lista, int totalRegistros);
+
+int main() {
+    srand(time(NULL));
+
+    int totalRegistros = numDias * lecturasPorDia;
+    RegistroCultivo *datosCultivo;
+
+    datosCultivo = (RegistroCultivo *)malloc(totalRegistros * sizeof(RegistroCultivo));
+    if (datosCultivo == NULL) {
+        printf("Error: No se pudo asignar la memoria.\n");
+        return 1;
+    }
+
+    printf("--- Simulacion de Monitoreo de Cultivos ---\n");
+    int registroId = 1;
+    for (int dia = 1; dia <= numDias; dia++) {
+        for (int lectura = 0; lectura < lecturasPorDia; lectura++) {
+            int horaSimulada = lectura * 4; // 0, 4, 8, 12, 16, 20 horas
+            generarDatos(&datosCultivo[registroId - 1], registroId, dia, horaSimulada);
+            registroId++;
+        }
+    }
+    printf("\nSe han generado %d registros para %d dias.\n", totalRegistros, numDias);
+
+    procesarDatos(datosCultivo, totalRegistros);
+
+    filtrarRegistros(datosCultivo, totalRegistros);
+
+    free(datosCultivo);
+
+    return 0;
+}
+
+void generarDatos(RegistroCultivo *registro, int id, int dia, int hora) {
+    registro->id = id;
+
+    registro->ph = 5.0 + (float)(rand() % 20) / 10.0;     // 5.0 a 6.9
+    registro->nutrientes = 600.0 + (float)(rand() % 600);   // 600 a 1199 ppm
+    registro->temperaturaAgua = 15.0 + (float)(rand() % 10); // 15 a 24 °C
+    registro->luzSolar = (float)(1000 + rand() % 5000);   // 1000 a 5999 lux
+
+    if (rand() % 5 == 0) { // 20% de probabilidad
+        registro->ph = (float)(rand() % 4); // 0 a 3.9
+    }
+    if (rand() % 8 == 0) { // 12.5% de probabilidad
+        registro->temperaturaAgua = (float)(5 + rand() % 5); // 5 a 9 °C
+    }
+
+    sprintf(registro->timestamp, "%02d/08/2025 %02d:00", dia, hora);
+}
+
+void procesarDatos(RegistroCultivo *lista, int totalRegistros) {
+    float mayorNutrientes = 0;
+    float sumaPh = 0;
+    float menorLuz = 99999;
+    int diaMenorLuz = 0;
+
+    printf("\n--- Analisis de Registros ---\n");
+    for (int i = 0; i < totalRegistros; i++) {
+        // A) Mayor valor de nutrientes
+        if (lista[i].nutrientes > mayorNutrientes) {
+            mayorNutrientes = lista[i].nutrientes;
+        }
+        sumaPh += lista[i].ph;
+
+        if (lista[i].luzSolar < menorLuz) {
+            menorLuz = lista[i].luzSolar;
+            sscanf(lista[i].timestamp, "%d", &diaMenorLuz);
+        }
+
+        if (lista[i].ph < 5.5 || lista[i].ph > 6.5) {
+            printf("  >>> ALERTA: pH fuera de rango en registro ID %d (pH: %.2f)\n", lista[i].id, lista[i].ph);
+        }
+    }
+    printf("\n  > Mayor valor de nutrientes: %.2f ppm\n", mayorNutrientes);
+    printf("  > Promedio de pH: %.2f\n", sumaPh / totalRegistros);
+    printf("  > Dia con menor luz solar: Dia %d (%.2f lux)\n", diaMenorLuz, menorLuz);
+
+    printf("\n--- Todos los Registros ---\n");
+    for (int i = 0; i < totalRegistros; i++) {
+        printf("ID: %d | pH: %.2f | Nutrientes: %.2f | Temp: %.2f | Luz: %.2f | Fecha: %s\n",
+                lista[i].id, lista[i].ph, lista[i].nutrientes, lista[i].temperaturaAgua, lista[i].luzSolar, lista[i].timestamp);
+    }
+}
+
+void filtrarRegistros(RegistroCultivo *lista, int totalRegistros) {
+    printf("\n--- Registros con Condiciones Criticas (Temp < 10°C) ---\n");
+    int encontrados = 0;
+    for (int i = 0; i < totalRegistros; i++) {
+        if (lista[i].temperaturaAgua < 10.0) { // Condicion de filtro
+            printf("ID: %d | pH: %.2f | Nutrientes: %.2f | Temp: %.2f | Luz: %.2f | Fecha: %s\n",
+                    lista[i].id, lista[i].ph, lista[i].nutrientes, lista[i].temperaturaAgua, lista[i].luzSolar, lista[i].timestamp);
+            encontrados++;
+        }
+    }
+    if (encontrados == 0) {
+        printf("No se encontraron registros con temperatura critica.\n");
+    }
+}
