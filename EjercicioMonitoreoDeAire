@@ -1,0 +1,138 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define numDias 2
+#define lecturasPorDia 4
+#define maximo 50
+
+typedef struct {
+    int id;
+    float pm25;         
+    float co;           
+    float temperatura;  
+    float humedad;      
+    char fecha[12];  
+} RegistroAire;
+
+void generarDatos(RegistroAire *registro, int id, int dia, int hora);
+void procesarDatos(RegistroAire *lista, int total_registros);
+void buscarRegistros(RegistroAire *lista, int total_registros);
+
+int main() {
+    srand(time(NULL));
+
+    int total_registros = numDias * lecturasPorDia;
+    RegistroAire *datos_aire;
+
+    datos_aire = (RegistroAire *)malloc(total_registros * sizeof(RegistroAire));
+    if (datos_aire == NULL) {
+        printf("Error: No se pudo asignar la memoria.\n");
+        return 1;
+    }
+
+    printf("--- Simulacion de Monitoreo de Calidad del Aire ---\n");
+    int registro_id = 1;
+    for (int dia = 1; dia <= numDias; dia++) {
+        for (int lectura = 0; lectura < lecturasPorDia; lectura++) {
+            int hora_simulada = lectura * 6; 
+            generarDatos(&datos_aire[registro_id - 1], registro_id, dia, hora_simulada);
+            registro_id++;
+        }
+    }
+    printf("\nSe han generado %d registros para %d dias.\n", total_registros, numDias);
+
+    procesarDatos(datos_aire, total_registros);
+
+    buscarRegistros(datos_aire, total_registros);
+
+    free(datos_aire);
+
+    return 0;
+}
+
+void generarDatos(RegistroAire *registro, int id, int dia, int hora) {
+    registro->id = id;
+    
+    registro->pm25 = (float)(10 + rand() % 50);   
+    registro->co = (float)(1 + rand() % 5);       
+    registro->temperatura = (float)(-5 + rand() % 35); 
+    registro->humedad = (float)(20 + rand() % 70); 
+
+    sprintf(registro->fecha, "%02d/08/2025", dia);
+}
+
+void procesarDatos(RegistroAire *lista, int total_registros) {
+    float mayor_pm25 = 0;
+    float suma_co = 0;
+    float temp_minima = 999;
+    
+    printf("\n--- Analisis de Registros ---\n");
+    for (int i = 0; i < total_registros; i++) {
+        
+        if (lista[i].pm25 > mayor_pm25) {
+            mayor_pm25 = lista[i].pm25;
+        }
+        
+        suma_co += lista[i].co;
+       
+        if (lista[i].temperatura < temp_minima) {
+            temp_minima = lista[i].temperatura;
+        }
+        
+        if (lista[i].pm25 > 35.0) {
+            printf("  >>> ALERTA: PM2.5 alto en registro ID %d (%.2f µg/m³)\n", lista[i].id, lista[i].pm25);
+        }
+    }
+    printf("\n  > Mayor nivel de PM2.5: %.2f µg/m³\n", mayor_pm25);
+    printf("  > Promedio de CO: %.2f ppm\n", suma_co / total_registros);
+    printf("  > Temperatura minima: %.2f °C\n", temp_minima);
+
+    printf("\n--- Todos los Registros ---\n");
+    for (int i = 0; i < total_registros; i++) {
+        printf("ID: %d | PM2.5: %.2f | CO: %.2f | Temp: %.2f | Humedad: %.2f | Fecha: %s\n",
+               lista[i].id, lista[i].pm25, lista[i].co, lista[i].temperatura, lista[i].humedad, lista[i].fecha);
+    }
+}
+
+void buscarRegistros(RegistroAire *lista, int total_registros) {
+    int opcion;
+    printf("\n--- Busqueda de Registros ---\n");
+    printf("1. Buscar por ID\n");
+    printf("2. Buscar por fecha\n");
+    printf("Seleccione una opcion: ");
+    scanf("%d", &opcion);
+
+    if (opcion == 1) {
+        int id_buscar;
+        printf("Ingrese el ID a buscar: ");
+        scanf("%d", &id_buscar);
+        if (id_buscar > 0 && id_buscar <= total_registros) {
+            int i = id_buscar - 1;
+            printf("\n--- Registro Encontrado ---\n");
+            printf("ID: %d | PM2.5: %.2f | CO: %.2f | Temp: %.2f | Humedad: %.2f | Fecha: %s\n",
+                   lista[i].id, lista[i].pm25, lista[i].co, lista[i].temperatura, lista[i].humedad, lista[i].fecha);
+        } else {
+            printf("ID no valido.\n");
+        }
+    } else if (opcion == 2) {
+        char fecha_buscar[12];
+        printf("Ingrese la fecha a buscar (DD/MM/AAAA): ");
+        scanf("%s", fecha_buscar);
+        printf("\n--- Registros Encontrados para la fecha %s ---\n", fecha_buscar);
+        int encontrados = 0;
+        for (int i = 0; i < total_registros; i++) {
+            if (strcmp(lista[i].fecha, fecha_buscar) == 0) {
+                printf("ID: %d | PM2.5: %.2f | CO: %.2f | Temp: %.2f | Humedad: %.2f\n",
+                       lista[i].id, lista[i].pm25, lista[i].co, lista[i].temperatura, lista[i].humedad);
+                encontrados++;
+            }
+        }
+        if (encontrados == 0) {
+            printf("No se encontraron registros para esa fecha.\n");
+        }
+    } else {
+        printf("Opcion no valida.\n");
+    }
+}
