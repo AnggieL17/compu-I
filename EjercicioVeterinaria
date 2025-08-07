@@ -1,0 +1,193 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define maxAnimales 10
+#define maxVacunas 10
+#define maximo 50
+
+typedef struct{
+    char nombre[maximo];
+    int edad;
+    char sexo;
+    char especie[maximo];
+    char raza[maximo];
+    char vacunas[maxVacunas][maximo];
+    int cantidadVacunas;
+} Animal;
+
+// Prototipos de funciones
+void limpiarBuffer();
+void agregarAnimal(Animal animales[], int *cantidad);
+void mostrarAnimales(Animal animales[], int cantidad);
+void buscarAnimal(Animal animales[], int cantidad);
+
+int main() {
+    Animal animales[maxAnimales];
+    int opcion;
+    int cantidad = 0;
+
+    do {
+        printf("\n--- Menu Principal ---\n");
+        printf("1. Ingresar Datos de Animales\n");
+        printf("2. Buscar un Animal por Nombre\n");
+        printf("3. Mostrar todos los Registros\n");
+        printf("4. Salir\n");
+        printf("Seleccione una opcion: ");
+        scanf("%d", &opcion);
+        limpiarBuffer();
+
+        switch (opcion) {
+            case 1:
+                agregarAnimal(animales, &cantidad);
+                break;
+            case 2:
+                buscarAnimal(animales, cantidad);
+                break;
+            case 3:
+                mostrarAnimales(animales, cantidad);
+                break;
+            case 4:
+                printf("\nSaliendo del programa. ¡Hasta luego!\n");
+                break;
+            default:
+                printf("\nOpcion no valida. Por favor, intente de nuevo.\n");
+                break;
+        }
+    } while (opcion != 4);
+
+    return 0;
+}
+
+// --- Implementacion de funciones ---
+
+// Funcion para limpiar el buffer de entrada
+void limpiarBuffer() {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+
+
+void agregarAnimal(Animal animales[], int *cantidad){
+    char respuesta;
+
+    if (*cantidad >= maxAnimales) {
+        printf("\nEl registro esta lleno, no se pueden agregar mas animales.\n");
+        return;
+    }
+
+    do {
+        printf("\n--- Registro de nuevo animal (%d/%d) ---\n", *cantidad + 1, maxAnimales);
+
+        printf("Ingresar nombre: ");
+        scanf(" %[^\n]", animales[*cantidad].nombre);
+        limpiarBuffer();
+
+        printf("Ingresar edad: ");
+        scanf("%d", &animales[*cantidad].edad);
+        limpiarBuffer();
+
+        printf("Ingresar sexo (M/H): ");
+        scanf(" %c", &animales[*cantidad].sexo);
+        limpiarBuffer();
+
+        printf("Ingresar especie: ");
+        scanf(" %[^\n]", animales[*cantidad].especie);
+        limpiarBuffer();
+
+        printf("Ingresar raza: ");
+        scanf(" %[^\n]", animales[*cantidad].raza);
+        limpiarBuffer();
+
+        
+        int j = 0;
+        animales[*cantidad].cantidadVacunas = 0;
+        do {
+            if (j >= maxVacunas) {
+                printf("Se ha alcanzado el maximo de vacunas para este animal.\n");
+                break;
+            }
+            printf("Ingresar vacuna %d: ", j + 1);
+            scanf(" %[^\n]", animales[*cantidad].vacunas[j]);
+            limpiarBuffer();
+
+            j++;
+            animales[*cantidad].cantidadVacunas = j;
+
+            printf("Desea registrar otra vacuna? (S/N): ");
+            scanf(" %c", &respuesta);
+            limpiarBuffer();
+        } while (toupper(respuesta) != 'N');
+
+        (*cantidad)++;
+        printf("\nAnimal registrado con exito.\n");
+
+        if (*cantidad < maxAnimales) {
+            printf("Desea ingresar otra mascota? (S/N): ");
+            scanf(" %c", &respuesta);
+            limpiarBuffer();
+        } else {
+            printf("Se ha alcanzado el maximo de registros.\n");
+            break;
+        }
+    } while (toupper(respuesta) != 'N');
+}
+
+void buscarAnimal(Animal animales[], int cantidad) {
+    if (cantidad == 0) {
+        printf("\nNo hay animales registrados.\n");
+        return;
+    }
+
+    char busqueda[maximo];
+    int encontrado = 0;
+
+    printf("\n--- Busqueda de Animal ---\n");
+    printf("Ingrese el nombre de la mascota a consultar: ");
+    scanf(" %[^\n]", busqueda);
+    limpiarBuffer();
+
+    for (int i = 0; i < cantidad; i++) {
+        if (strcmp(animales[i].nombre, busqueda) == 0) {
+            printf("\n--- Animal Encontrado ---\n");          
+			printf("Nombre: %s\n", animales[i].nombre);
+            printf("Edad: %d\n", animales[i].edad);
+            printf("Sexo: %c\n", animales[i].sexo);
+            printf("Especie: %s\n", animales[i].especie);
+            printf("Raza: %s\n", animales[i].raza);
+            printf("Vacunas: ");
+            for (int j = 0; j < animales[i].cantidadVacunas; j++) {
+                printf("%s ", animales[i].vacunas[j]);
+            }
+            printf("\n");
+            encontrado = 1;
+            break;
+        }
+    }
+
+    if (!encontrado) {
+        printf("\nMascota '%s' no encontrada.\n", busqueda);
+    }
+}
+
+void mostrarAnimales(Animal animales[], int cantidad) {
+    if (cantidad == 0) {
+        printf("\nNo hay animales registrados para mostrar.\n");
+        return;
+    }
+
+    printf("\n--- MASCOTAS REGISTRADAS ---\n");
+    for (int i = 0; i < cantidad; i++) {
+        printf("\nNombre: %s\n", animales[i].nombre);
+        printf("Edad: %d\n", animales[i].edad);
+        printf("Sexo: %c\n", animales[i].sexo);
+        printf("Especie: %s\n", animales[i].especie);
+        printf("Raza: %s\n", animales[i].raza);
+        printf("Vacunas: ");
+        for (int j = 0; j < animales[i].cantidadVacunas; j++) {
+            printf("%s ", animales[i].vacunas[j]);
+        }
+        printf("\n----------------------------------------\n");
+    }
+}
