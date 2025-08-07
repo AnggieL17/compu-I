@@ -1,0 +1,109 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+
+#define MAX_PACIENTES 50
+
+typedef struct {
+    int id;
+    int frecuenciaCardiaca;
+    int presionSistolica;
+    int presionDiastolica;
+    int saturacionOxigeno;
+    float temperaturaCorporal;
+    int estadoCritico;
+} Paciente;
+
+
+void actualizarPaciente(Paciente *p, int *estado);
+Paciente* buscarCriticos(Paciente *lista, int tamano, int *total);
+
+int main() {
+
+    srand(time(NULL));
+
+    Paciente pacientes[MAX_PACIENTES];
+    int i, j;
+    int alertaGeneral = 0;
+
+
+    for (i = 0; i < MAX_PACIENTES; i++) {
+        pacientes[i].id = i + 1;
+        pacientes[i].estadoCritico = 0;
+    }
+
+    printf("--- Simulacion de Monitoreo de Pacientes ---\n");
+    for (i = 0; i < 3; i++) {
+        printf("\n--- Actualizacion %d ---\n", i + 1);
+        alertaGeneral = 0;
+
+        for (j = 0; j < MAX_PACIENTES; j++) {
+            actualizarPaciente(&pacientes[j], &alertaGeneral);
+        }
+
+        int totalCriticos = 0;
+        Paciente *criticos = buscarCriticos(pacientes, MAX_PACIENTES, &totalCriticos);
+
+        if (totalCriticos > 0) {
+            printf("\n\n*** ALERTA: %d PACIENTES EN ESTADO CRITICO ***\n", totalCriticos);
+            for (j = 0; j < totalCriticos; j++) {
+                printf(" - Paciente ID %d: Requiere intervencion inmediata.\n", criticos[j].id);
+                printf("    - Saturacion de Oxigeno: %d%%\n", criticos[j].saturacionOxigeno);
+            }
+            free(criticos);
+        } else {
+            printf("\nTodos los pacientes estan estables.\n");
+        }
+    }
+
+    return 0;
+}
+
+void actualizarPaciente(Paciente *p, int *alertaGeneral) {
+    // Generar valores aleatorios, algunos en rangos criticos
+    p->frecuenciaCardiaca = 60 + rand() % 80; // 60 a 139
+    p->presionSistolica = 90 + rand() % 70; // 90 a 159
+    p->presionDiastolica = 60 + rand() % 40; // 60 a 99
+    p->saturacionOxigeno = 90 + rand() % 10; // 90 a 99
+    p->temperaturaCorporal = 36.0 + (float)(rand() % 40) / 10.0; // 36.0 a 39.9
+
+    if (rand() % 10 == 0) { // Hay un 10% de probabilidad de que sea critico
+        p->saturacionOxigeno = 80 + rand() % 9; // 80% a 88%
+    }
+
+    if (p->saturacionOxigeno < 90) {
+        p->estadoCritico = 1;
+        *alertaGeneral = 1; 
+    } else {
+        p->estadoCritico = 0;
+    }
+}
+
+Paciente* buscarCriticos(Paciente *lista, int tamano, int *total) {
+    *total = 0;
+    int i;
+
+    for (i = 0; i < tamano; i++) {
+        if (lista[i].estadoCritico == 1) {
+            (*total)++;
+        }
+    }
+
+    if (*total == 0) {
+        return NULL;
+    }
+
+    Paciente* criticosEncontrados = (Paciente*)malloc(*total * sizeof(Paciente));
+
+    int indiceCriticos = 0;
+   
+    for (i = 0; i < tamano; i++) {
+        if (lista[i].estadoCritico == 1) {
+            criticosEncontrados[indiceCriticos] = lista[i];
+            indiceCriticos++;
+        }
+    }
+
+    return criticosEncontrados;
+}
